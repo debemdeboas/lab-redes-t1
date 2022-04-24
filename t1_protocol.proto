@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package t1_protocol;
+
+/*
+ * FULL PACKET PROTOCOL:
+ * LAYER 2 HEADER | T1_PROTOCOL
+ */
+
+message T1Protocol {
+    enum MessageType {
+        START = 0;
+        HEARTBEAT = 1;
+        TALK = 2;
+    }
+    MessageType type = 1;
+    string name = 2;
+    string data = 3;
+}

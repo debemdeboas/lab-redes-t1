@@ -16,4 +16,5 @@ class T1ProtocolMessageType(betterproto.Enum):
 class T1Protocol(betterproto.Message):
     type: "T1ProtocolMessageType" = betterproto.enum_field(1)
     name: str = betterproto.string_field(2)
-    data: str = betterproto.string_field(3)
+    dest: str = betterproto.string_field(3)
+    data: str = betterproto.string_field(4)

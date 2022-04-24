@@ -15,5 +15,6 @@ message T1Protocol {
     }
     MessageType type = 1;
     string name = 2;
-    string data = 3;
+    string dest = 3; /* Used in TALK */
+    string data = 4;
 }

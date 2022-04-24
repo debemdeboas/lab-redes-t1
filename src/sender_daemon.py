@@ -2,43 +2,49 @@ from queue import Queue
 from src.socket_daemon import RawSocketDaemon
 from lib.t1_protocol import *
 from src.socket_utils import *
-from typing import NewType
-from threading import Lock, Timer
-
-Header = NewType('Header', bytes)
+from threading import Timer
 
 class SenderDaemon(RawSocketDaemon):
     def __init__(self, interface: str = ...) -> None:
         super().__init__(interface)
         self.q: Queue[Tuple[Header, T1Protocol]] = Queue()
         self.name = self.mac_str.upper()
-        self.lock = Lock()
         self.alive_timer = Timer(5, self.send_alive)
+        self.alive_timer.daemon = True
         self.alive_timer.start()
 
     def run(self) -> None:
-        print('starting')
         while True:
             message = self.q.get()
-            
             header, proto_data = message
+            
+            # print(f'Sending message {proto_data}')
+            
             proto_data = proto_data.SerializeToString()
-            # print(message)
             self.socket.send(header + proto_data)
 
 
-    def encode_message(self, type: T1ProtocolMessageType, data: str = '') -> T1Protocol:
-        return T1Protocol(type, self.name, data)
+    def encode_message(self, type: T1ProtocolMessageType, dst: str, data: str = '') -> T1Protocol:
+        return T1Protocol(type=type, name=self.name, data=data, dest=dst)
 
-    def put(self, type: T1ProtocolMessageType, dst: List[str], data: str = '') -> None:
+    def put(self, type: T1ProtocolMessageType, dst: List[str] | str, data: str = '') -> None:
+        if isinstance(dst, str):
+            dst_str = dst
+            dst = dst.split(':')
+        else:
+            dst_str = ':'.join(dst)
         dest = [int(d, 16) for d in dst]
-        msg = self.encode_message(type, data)
+        msg = self.encode_message(type, dst_str, data)
         header = Header(pack_eth_header(self.mac_address, dest, ETH_CUSTOM_PROTOCOL))
         self.q.put((header, msg))
 
     def send_alive(self) -> None:
-        self.put(T1ProtocolMessageType.HEARTBEAT, self.broadcast)
-        self.alive_timer.run()
+        # print('Sending alive')
+        self.put(T1ProtocolMessageType.HEARTBEAT, MAC_BROADCAST)
+        self.alive_timer = Timer(5, self.send_alive)
+        self.alive_timer.daemon = True
+        self.alive_timer.start()
 
     def ack_alive(self, to: str) -> None:
+        # print(f'ack_alive {to}')
         self.put(T1ProtocolMessageType.HEARTBEAT, to.split(':'))

@@ -8,7 +8,7 @@ class RawSocketDaemon(threading.Thread):
 
         self.interface = interface
         self.socket = sock_util.create_and_bind_socket(self.interface)
-        self.mac_address, self.mac_broadcast, self.mac_str, self.broadcast = sock_util.get_mac_data(self.interface)
+        self.mac_address, self.mac_str = sock_util.get_mac_data(self.interface)
 
     def run(self) -> None:
         raise NotImplementedError()

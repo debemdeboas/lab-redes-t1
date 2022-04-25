@@ -7,7 +7,7 @@ import time
 
 
 class ReceiverDaemon(RawSocketDaemon):
-    def __init__(self, ack_alive_func: Callable = ..., interface: str = ...) -> None:
+    def __init__(self, ack_alive_func: Callable[..., None] = ..., interface: str = ...) -> None:
         super().__init__(interface)
 
         self.known_hosts: Set = {sock_util.MAC_BROADCAST}
@@ -86,10 +86,6 @@ class ReceiverDaemon(RawSocketDaemon):
             elif dst != sock_util.MAC_BROADCAST and dst != self.mac_str:
                 # print(3, dst, self.mac_str)
                 continue
-            # elif dst != sock_util.MAC_BROADCAST and \
-            #         (data.dest and data.dest != self.mac_str):
-            #     # print(4, data.dest, self.mac_str)
-            #     continue
             elif data.name not in self.known_hosts and \
                     data.type != T1ProtocolMessageType.START:
                 if dst != sock_util.MAC_BROADCAST and data.type == T1ProtocolMessageType.HEARTBEAT:
@@ -110,7 +106,7 @@ class ReceiverDaemon(RawSocketDaemon):
                     self.update_alive_table(data.name)
                 case T1ProtocolMessageType.TALK:
                     print(
-                        f'TALK[From {src} ({data.name}) to {dst} ({data.dest})]: {data.data}')
+                        f'TALK[From {src} ({data.name}) to {dst}]: {data.data}')
                     self.last_contact = data.name
                 case _:
                     print(f'Unknown type. Type: {packet_type}')

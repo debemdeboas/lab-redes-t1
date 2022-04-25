@@ -24,17 +24,12 @@ class SenderDaemon(RawSocketDaemon):
             proto_data = proto_data.SerializeToString()
             self.socket.send(header + proto_data)
 
-    def encode_message(self, type: T1ProtocolMessageType, dst: str, data: str = '') -> T1Protocol:
-        return T1Protocol(type=type, name=self.name, data=data, dest=dst)
+    def encode_message(self, type: T1ProtocolMessageType, data: str = '') -> T1Protocol:
+        return T1Protocol(type=type, name=self.name, data=data)
 
-    def put(self, type: T1ProtocolMessageType, dst: List[str] | str, data: str = '') -> None:
-        if isinstance(dst, str):
-            dst_str = dst
-            dst = dst.split(':')
-        else:
-            dst_str = ':'.join(dst)
-        dest = [int(d, 16) for d in dst]
-        msg = self.encode_message(type, '', data)
+    def put(self, type: T1ProtocolMessageType, dst: str, data: str = '') -> None:
+        dest = [int(d, 16) for d in dst.split(':')]
+        msg = self.encode_message(type, data)
         header = Header(pack_eth_header(
             self.mac_address, dest, ETH_CUSTOM_PROTOCOL)
         )
@@ -49,4 +44,4 @@ class SenderDaemon(RawSocketDaemon):
 
     def ack_alive(self, to: str) -> None:
         # print(f'ack_alive {to}')
-        self.put(T1ProtocolMessageType.HEARTBEAT, to.split(':'))
+        self.put(T1ProtocolMessageType.HEARTBEAT, to)

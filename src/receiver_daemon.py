@@ -86,10 +86,10 @@ class ReceiverDaemon(RawSocketDaemon):
             elif dst != sock_util.MAC_BROADCAST and dst != self.mac_str:
                 # print(3, dst, self.mac_str)
                 continue
-            elif dst != sock_util.MAC_BROADCAST and \
-                    not data.dest and data.dest != self.mac_str:
-                # print(4, data.dest, self.mac_str)
-                continue
+            # elif dst != sock_util.MAC_BROADCAST and \
+            #         (data.dest and data.dest != self.mac_str):
+            #     # print(4, data.dest, self.mac_str)
+            #     continue
             elif data.name not in self.known_hosts and \
                     data.type != T1ProtocolMessageType.START:
                 if dst != sock_util.MAC_BROADCAST and data.type == T1ProtocolMessageType.HEARTBEAT:

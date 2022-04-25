@@ -34,9 +34,10 @@ class SenderDaemon(RawSocketDaemon):
         else:
             dst_str = ':'.join(dst)
         dest = [int(d, 16) for d in dst]
-        msg = self.encode_message(type, dst_str, data)
+        msg = self.encode_message(type, '', data)
         header = Header(pack_eth_header(
-            self.mac_address, dest, ETH_CUSTOM_PROTOCOL))
+            self.mac_address, dest, ETH_CUSTOM_PROTOCOL)
+        )
         self.q.put((header, msg))
 
     def send_alive(self) -> None:

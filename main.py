@@ -43,7 +43,6 @@ def execute(interface: str) -> None:
                 case '4' | 'talkto':
                     to_whom = [mac.split(' ')[0] for mac in data[1].split(',')]
                     msg = data[1].split(' ', 1)[1:][0]
-                    print(msg)
                     for to in to_whom:
                         writer.put(T1ProtocolMessageType.TALK, to, msg)
                 case '5' | 'redial':

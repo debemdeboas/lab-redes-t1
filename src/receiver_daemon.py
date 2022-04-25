@@ -10,13 +10,13 @@ class ReceiverDaemon(RawSocketDaemon):
     def __init__(self, ack_alive_func: Callable = ..., interface: str = ...) -> None:
         super().__init__(interface)
 
-        self.known_hosts: Set = {
-            sock_util.MAC_BROADCAST
-        }
+        self.known_hosts: Set = {sock_util.MAC_BROADCAST}
         self.known_hosts_lock = Lock()
 
         self.alive_table: Dict[str, float] = {}
         self.alive_table_lock = Lock()
+
+        self.last_contact: str = ''
 
         self.ack_alive = ack_alive_func
         self.alive_timer = Timer(15, self.check_known_hosts)
@@ -76,25 +76,25 @@ class ReceiverDaemon(RawSocketDaemon):
                 continue
 
             if src == self.mac_str:
-                print(1, src, self.mac_str)
+                # print(1, src, self.mac_str)
                 continue
             elif (data := T1Protocol.FromString(packet[14:])).name == self.mac_str:
-                print(2, data.name, self.mac_str)
+                # print(2, data.name, self.mac_str)
                 continue
             elif dst != sock_util.MAC_BROADCAST and dst != self.mac_str:
-                print(3, dst, self.mac_str)
+                # print(3, dst, self.mac_str)
                 continue
             elif dst != sock_util.MAC_BROADCAST and \
                 not data.dest and data.dest != self.mac_str:
-                print(4, data.dest, self.mac_str)
+                # print(4, data.dest, self.mac_str)
                 continue
             elif data.name not in self.known_hosts and \
                 data.type != T1ProtocolMessageType.START:
                 if dst != sock_util.MAC_BROADCAST and data.type == T1ProtocolMessageType.HEARTBEAT:
-                    print('START response')
+                    # print('START response')
                     pass
                 else:
-                    print(5, data.name, dst, self.known_hosts, data.type)
+                    # print(5, data.name, dst, self.known_hosts, data.type)
                     continue
 
             match data.type:
@@ -108,5 +108,6 @@ class ReceiverDaemon(RawSocketDaemon):
                     self.update_alive_table(data.name)
                 case T1ProtocolMessageType.TALK:
                     print(f'From {src} ({data.name}) to {dst} ({data.dest}) (proto {hex(packet_type)}): {str(T1ProtocolMessageType(data.type))[22:]} | {data.data}')
+                    self.last_contact = data.name
                 case _:
                     print(f'Unknown protocol type! Type: {packet_type}')

@@ -3,7 +3,7 @@ import src.socket_utils as sock_util
 
 
 class RawSocketDaemon(threading.Thread):
-    def __init__(self, interface: str = sock_util.IFACE) -> None:
+    def __init__(self, interface: str = sock_util.pref_interface) -> None:
         threading.Thread.__init__(self, daemon=True)
 
         self.interface = interface

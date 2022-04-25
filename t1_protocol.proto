@@ -2,11 +2,6 @@ syntax = "proto3";
 
 package t1_protocol;
 
-/*
- * FULL PACKET PROTOCOL:
- * LAYER 2 HEADER | T1_PROTOCOL
- */
-
 message T1Protocol {
     enum MessageType {
         START = 0;

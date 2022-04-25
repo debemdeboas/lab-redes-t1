@@ -1,7 +1,6 @@
-from typing import Any, Tuple
 from src.receiver_daemon import ReceiverDaemon
 from src.sender_daemon import SenderDaemon
-from src.socket_utils import IFACE, MAC_BROADCAST
+from src.socket_utils import pref_interface, MAC_BROADCAST
 from lib.t1_protocol import *
 
 import sys
@@ -18,7 +17,7 @@ def print_menu() -> None:
 6. TABLE: Prints the current address table.
           """)
 
-def execute(interface: str = IFACE) -> None:
+def execute(interface: str) -> None:
     writer = SenderDaemon(interface=interface)
     reader = ReceiverDaemon(ack_alive_func = writer.ack_alive, interface=interface)
 
@@ -27,22 +26,42 @@ def execute(interface: str = IFACE) -> None:
 
     print_menu()
     while True:
-        match (data := input('> ').split(' ', 1))[0].lower():
-            case '0' | 'menu':
-                print_menu()
-            case '1' | 'start':
-                writer.put(T1ProtocolMessageType.START, MAC_BROADCAST)
-            case '2' | 'heartbeat':
-                writer.send_alive()
-            case '3' | 'talk':
-                writer.put(T1ProtocolMessageType.TALK, MAC_BROADCAST, ''.join(data[1:]))
-            case '6' | 'table':
-                reader.print_routing_table()
-            case _:
-                print('Invalid input')
+        try:
+            match (data := input('> ').split(' ', 1))[0].lower():
+                case '0' | 'menu':
+                    print_menu()
+                case '1' | 'start':
+                    writer.put(T1ProtocolMessageType.START, MAC_BROADCAST)
+                case '2' | 'heartbeat':
+                    writer.send_alive()
+                case '3' | 'talk':
+                    writer.put(T1ProtocolMessageType.TALK, MAC_BROADCAST, data[1])
+                case '4' | 'talkto':
+                    to_whom = [mac.split(' ')[0] for mac in data[1].split(',')]
+                    msg = data[1].split(' ', 1)[1:][0]
+                    print(msg)
+                    for to in to_whom:
+                        writer.put(T1ProtocolMessageType.TALK, to, msg)
+                case '5' | 'redial':
+                    if not reader.last_contact: 
+                        print('Last contact is empty')
+                    writer.put(T1ProtocolMessageType.TALK, reader.last_contact, data[1])
+                case '6' | 'table':
+                    reader.print_routing_table()
+                case '\n':
+                    continue
+                case _:
+                    print('Invalid input')
+        except KeyboardInterrupt:
+            print('Goodbye!')
+            exit(0)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
-    print(sys.argv)
+    if sys.argv == 2:
+        pref_interface = sys.argv[1]
+        print(f'Starting on interface {pref_interface}')
 
-    execute()
+    execute(pref_interface)

@@ -5,7 +5,7 @@ import netifaces
 from typing import NewType
 
 
-IFACE = 'eth0'
+pref_interface = 'eth0'
 ETH_P_ALL = 3
 ETH_FRAME_SIZE = 1518
 ETH_CUSTOM_PROTOCOL = 0x8044

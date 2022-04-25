@@ -1,5 +1,5 @@
-import threading
 import src.socket_utils as sock_util
+import threading
 
 
 class RawSocketDaemon(threading.Thread):
@@ -12,4 +12,3 @@ class RawSocketDaemon(threading.Thread):
 
     def run(self) -> None:
         raise NotImplementedError()
-

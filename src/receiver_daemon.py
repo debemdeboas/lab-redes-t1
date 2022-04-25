@@ -1,9 +1,9 @@
-from threading import Timer, Lock
-import time
-from typing import Callable, Dict, Set
-from src.socket_daemon import RawSocketDaemon
-import src.socket_utils as sock_util
 from lib.t1_protocol import *
+from src.socket_daemon import RawSocketDaemon
+from threading import Timer, Lock
+from typing import Callable, Dict, Set
+import src.socket_utils as sock_util
+import time
 
 
 class ReceiverDaemon(RawSocketDaemon):
@@ -70,7 +70,9 @@ class ReceiverDaemon(RawSocketDaemon):
     def run(self) -> None:
         while True:
             packet = self.socket.recv(sock_util.ETH_FRAME_SIZE)
-            src, dst, packet_type = sock_util.unpack_eth_header(sock_util.Header(packet[:14]))
+            src, dst, packet_type = sock_util.unpack_eth_header(
+                sock_util.Header(packet[:14])
+            )
 
             if packet_type != sock_util.ETH_CUSTOM_PROTOCOL:
                 continue
@@ -85,11 +87,11 @@ class ReceiverDaemon(RawSocketDaemon):
                 # print(3, dst, self.mac_str)
                 continue
             elif dst != sock_util.MAC_BROADCAST and \
-                not data.dest and data.dest != self.mac_str:
+                    not data.dest and data.dest != self.mac_str:
                 # print(4, data.dest, self.mac_str)
                 continue
             elif data.name not in self.known_hosts and \
-                data.type != T1ProtocolMessageType.START:
+                    data.type != T1ProtocolMessageType.START:
                 if dst != sock_util.MAC_BROADCAST and data.type == T1ProtocolMessageType.HEARTBEAT:
                     # print('START response')
                     pass
@@ -107,7 +109,8 @@ class ReceiverDaemon(RawSocketDaemon):
                         self.add_to_routing_table(data.name)
                     self.update_alive_table(data.name)
                 case T1ProtocolMessageType.TALK:
-                    print(f'From {src} ({data.name}) to {dst} ({data.dest}) (proto {hex(packet_type)}): {str(T1ProtocolMessageType(data.type))[22:]} | {data.data}')
+                    print(
+                        f'TALK[From {src} ({data.name}) to {dst} ({data.dest})]: {data.data}')
                     self.last_contact = data.name
                 case _:
-                    print(f'Unknown protocol type! Type: {packet_type}')
+                    print(f'Unknown type. Type: {packet_type}')

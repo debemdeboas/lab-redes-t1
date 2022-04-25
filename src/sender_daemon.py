@@ -18,9 +18,6 @@ class SenderDaemon(RawSocketDaemon):
         while True:
             message = self.q.get()
             header, proto_data = message
-
-            # print(f'Sending message {proto_data}')
-
             proto_data = proto_data.SerializeToString()
             self.socket.send(header + proto_data)
 

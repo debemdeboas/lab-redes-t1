@@ -44,14 +44,13 @@ def execute(interface: str) -> None:
                         writer.put(T1ProtocolMessageType.TALK, to, msg)
                 case '5' | 'redial':
                     if not reader.last_contact: 
-                        print('Last contact is empty')
+                        print('No last contact!')
+                        continue
                     writer.put(T1ProtocolMessageType.TALK, reader.last_contact, data[1])
                 case '6' | 'table':
                     reader.print_routing_table()
-                case '\n':
-                    continue
                 case _:
-                    print('Invalid input')
+                    print(f'Invalid input. {data[0]}')
         except KeyboardInterrupt:
             print('Goodbye!')
             exit(0)

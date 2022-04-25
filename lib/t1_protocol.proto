@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package t1_protocol;
+
+message T1Protocol {
+    enum MessageType {
+        START = 0;
+        HEARTBEAT = 1;
+        TALK = 2;
+    }
+    MessageType type = 1;
+    string name = 2;
+    string dest = 3; /* Used in TALK */
+    string data = 4;
+}

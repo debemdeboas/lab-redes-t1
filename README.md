@@ -1,1 +1,1 @@
-protoc -I . --python_betterproto_out=lib t1_protocol.proto
+protoc -I . --python_betterproto_out=lib lib/t1_protocol.proto
